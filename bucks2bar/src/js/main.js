@@ -53,4 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
         barChart.data.datasets[1].data = data.expenses;
         barChart.update();
     });
+
+    // Download chart as image when downloadBtn is clicked
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+        const link = document.createElement('a');
+        link.href = barChart.toBase64Image();
+        link.download = 'bucks2bar-chart.png';
+        link.click();
+    });
 });
