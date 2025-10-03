@@ -18,6 +18,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return { income, expenses };
     }
 
+    // Input with id "username" on change event listener
+    document.getElementById('username').addEventListener('input', function () {
+        // get the value of the input
+        const username = this.value;
+        console.log(`Username changed to: ${username}`);
+        // regex to check if the username contains at least one capital letter, one number and one special character and at least 8 characters long
+        const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (regex.test(username)) {
+            // set the input border to green
+            this.style.borderColor = 'green';
+        } else {
+            // set the input border to red
+            this.style.borderColor = 'red';
+        }
+    });
+
     const ctx = document.getElementById('barChart').getContext('2d');
     const barChart = new Chart(ctx, {
         type: 'bar',
