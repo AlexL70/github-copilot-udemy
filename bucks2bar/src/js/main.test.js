@@ -1,5 +1,5 @@
-// Extract the regex from main.js for testing
-const usernameRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+// Extract the updated regex from main.js for testing
+const usernameRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 describe('username validation regex', () => {
   test('valid username passes', () => {
@@ -21,5 +21,9 @@ describe('username validation regex', () => {
 
   test('too short fails', () => {
     expect(usernameRegex.test('A1!a')).toBe(false);
+  });
+
+  test('missing lowercase fails', () => {
+    expect(usernameRegex.test('ABCDEFG1!')).toBe(false);
   });
 });
