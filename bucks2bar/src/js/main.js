@@ -69,4 +69,23 @@ document.addEventListener('DOMContentLoaded', () => {
         link.download = 'bucks2bar-chart.png';
         link.click();
     });
+
+    // Call sending email endpoint
+    document.getElementById('sendEmailBtn')?.addEventListener('click', () => {
+        const email = document.getElementById('userEmail').value;
+        if (!email) {
+            alert('Please enter your email address.');
+            return;
+        }
+        if (!barChart) return;
+        const chartImage = barChart.toBase64Image();
+
+        fetch('http://localhost:3000/send-chart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, chartImage })
+        })
+            .then(res => res.ok ? alert('Chart sent!') : alert('Failed to send chart.'))
+            .catch(err => alert('Error: ' + err));
+    });
 });
