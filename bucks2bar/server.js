@@ -4,14 +4,26 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const app = express();
-app.use(cors());
+// Allow CORS from localhost (with any port)
+app.use(cors({
+    origin: /http:\/\/localhost(:\d+)?/
+}));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.json());
 
 app.post('/send-chart', async (req, res) => {
+    const emailValidator = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const { email, chartImage } = req.body;
+    if (!emailValidator.test(email)) {
+        const errorMessage = `Invalid email address: ${email}`;
+        console.log(errorMessage);
+        return res.status(400).json({ message: errorMessage });
+    }
     // Get Resend API key from the RESEND_API environment variable
     const resendApiKey = process.env.RESEND_API;
+    if (!resendApiKey) {
+        return res.status(500).json({ message: 'Missing RESEND_API key' });
+    }
     // Validate email and chartImage here
     const transporter = nodemailer.createTransport({
         host: 'smtp.resend.com',

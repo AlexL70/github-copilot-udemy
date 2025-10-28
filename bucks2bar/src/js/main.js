@@ -15,12 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return { income, expenses };
     };
 
+    const { USERNAME_REGEX } = require('./regex');
     const usernameInput = document.getElementById('username');
     usernameInput?.addEventListener('input', e => {
         const username = e.target.value;
         console.log(`Username changed to: ${username}`);
-        const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&~])[A-Za-z\d@$!%*?&~]{8,}$/;
-        e.target.style.borderColor = regex.test(username) ? 'green' : 'red';
+        e.target.style.borderColor = USERNAME_REGEX.test(username) ? 'green' : 'red';
     });
 
     const ctx = document.getElementById('barChart')?.getContext('2d');
@@ -85,7 +85,17 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, chartImage })
         })
-            .then(res => res.ok ? alert('Chart sent!') : alert('Failed to send chart.'))
+            // if response is ok, alert success, if body contains "message" field, alert it.
+            // otherwise alert failure
+            .then(res => {
+                if (res.ok) {
+                    alert('Chart sent!');
+                } else {
+                    return res.json().then(data => {
+                        alert(data.message || 'Failed to send chart.');
+                    });
+                }
+            })
             .catch(err => alert('Error: ' + err));
     });
 });
