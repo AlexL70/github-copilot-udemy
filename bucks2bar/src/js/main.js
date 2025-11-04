@@ -16,12 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const { USERNAME_REGEX } = require('./regex');
-    const usernameInput = document.getElementById('username');
-    usernameInput?.addEventListener('input', e => {
+    function usernameInputCallback(e) {
         const username = e.target.value;
         console.log(`Username changed to: ${username}`);
         e.target.style.borderColor = USERNAME_REGEX.test(username) ? 'green' : 'red';
-    });
+    }
+    const usernameInput = document.getElementById('username');
+    usernameInput?.addEventListener('input', usernameInputCallback);
 
     const ctx = document.getElementById('barChart')?.getContext('2d');
     const barChart = ctx && new Chart(ctx, {
