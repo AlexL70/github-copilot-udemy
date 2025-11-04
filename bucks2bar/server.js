@@ -11,6 +11,18 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.json());
 
+// Non-deterministic dummy data endpoint
+app.get('/dummy-data', (req, res) => {
+    const months = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    // Generate random income and expenses for each month
+    const income = months.map(() => Math.floor(Math.random() * 5000) + 2000); // 2000-7000
+    const expenses = months.map(() => Math.floor(Math.random() * 3000) + 1000); // 1000-4000
+    res.json({ months, income, expenses });
+});
+
 app.post('/send-chart', async (req, res) => {
     const emailValidator = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const { email, chartImage } = req.body;

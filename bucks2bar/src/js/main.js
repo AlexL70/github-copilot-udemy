@@ -1,11 +1,31 @@
 
 import { USERNAME_REGEX } from './regex.js';
 document.addEventListener('DOMContentLoaded', () => {
+
+    const months = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+
+    // Fetch dummy data and update input fields
+    fetch('http://localhost:3000/dummy-data')
+        .then(res => res.json())
+        .then(data => {
+            months.forEach((month, i) => {
+                const incomeInput = document.getElementById(`${month}-income`);
+                const expensesInput = document.getElementById(`${month}-expenses`);
+                if (incomeInput) incomeInput.value = data.income[i];
+                if (expensesInput) expensesInput.value = data.expenses[i];
+            });
+            // If chart is already initialized, update chart data
+            if (barChart) {
+                barChart.data.datasets[0].data = data.income;
+                barChart.data.datasets[1].data = data.expenses;
+                barChart.update();
+            }
+        });
+
     const getMonthlyData = () => {
-        const months = [
-            'january', 'february', 'march', 'april', 'may', 'june',
-            'july', 'august', 'september', 'october', 'november', 'december'
-        ];
         const income = [];
         const expenses = [];
         months.forEach(month => {
