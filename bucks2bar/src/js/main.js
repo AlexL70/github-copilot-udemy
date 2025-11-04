@@ -16,6 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const { USERNAME_REGEX } = require('./regex');
+    /**
+     * Handles username input field changes and validates the username format.
+     * Updates the border color of the input field based on validation result.
+     * 
+     * @param {Event} e - The input event object
+     * @param {HTMLInputElement} e.target - The username input element that triggered the event
+     */
     function usernameInputCallback(e) {
         const username = e.target.value;
         console.log(`Username changed to: ${username}`);
