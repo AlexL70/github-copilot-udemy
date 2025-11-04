@@ -1,3 +1,5 @@
+
+import { USERNAME_REGEX } from './regex.js';
 document.addEventListener('DOMContentLoaded', () => {
     const getMonthlyData = () => {
         const months = [
@@ -15,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return { income, expenses };
     };
 
-    const { USERNAME_REGEX } = require('./regex');
     /**
      * Handles username input field changes and validates the username format.
      * Updates the border color of the input field based on validation result.
