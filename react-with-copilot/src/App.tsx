@@ -4,6 +4,7 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import Register from "./Register";
+import Employees from "./Employees";
 
 function Home() {
   const [count, setCount] = useState(0);
@@ -39,6 +40,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/employees" element={<Employees />} />
     </Routes>
   );
 }
