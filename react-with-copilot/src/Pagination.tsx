@@ -6,6 +6,28 @@ interface PaginationProps {
   onPageChange?: (page: number) => void;
 }
 
+/**
+ * A pagination component that provides navigation controls for paginated content.
+ *
+ * @param props - The pagination component props
+ * @param props.totalPages - The total number of pages available
+ * @param props.initialPage - The initial page to display (defaults to 1)
+ * @param props.onPageChange - Optional callback function called when the current page changes
+ *
+ * @returns A React functional component that renders pagination controls including:
+ * - Previous button (disabled on first page)
+ * - Page selector dropdown showing current page and total pages
+ * - Next button (disabled on last page)
+ *
+ * @example
+ * ```tsx
+ * <Pagination
+ *   totalPages={10}
+ *   initialPage={1}
+ *   onPageChange={(page) => console.log(`Current page: ${page}`)}
+ * />
+ * ```
+ */
 const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   initialPage = 1,
