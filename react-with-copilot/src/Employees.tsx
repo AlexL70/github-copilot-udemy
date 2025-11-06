@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Pagination from "./Pagination";
 
 export interface Employee {
@@ -40,9 +41,35 @@ const employees: Employee[] = [
 ];
 
 export default function Employees() {
+  const [currentPage, setCurrentPage] = useState(1);
   return (
     <div>
-      <Pagination totalPages={Math.ceil(employees.length / 5)} />
+      <h1>Employees</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {employees
+            .slice((currentPage - 1) * 5, currentPage * 5)
+            .map((employee) => (
+              <tr key={employee.id}>
+                <td>{employee.id}</td>
+                <td>{employee.firstName}</td>
+                <td>{employee.lastName}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+      <Pagination
+        initialPage={currentPage}
+        onPageChange={(currentPage) => setCurrentPage(currentPage)}
+        totalPages={Math.ceil(employees.length / 5)}
+      />
     </div>
   );
 }
