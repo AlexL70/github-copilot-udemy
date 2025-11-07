@@ -9,16 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-interface Location {
-  id: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  country: string;
-  admin1?: string;
-  timezone: string;
-}
+import { searchLocations, type Location } from "@/lib/api";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,7 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const searchLocations = async (query: string) => {
+  const handleSearch = async (query: string) => {
     if (!query.trim()) {
       setLocations([]);
       setError("");
@@ -37,20 +28,10 @@ export default function Home() {
     setError("");
 
     try {
-      const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-          query
-        )}&count=10&language=en&format=json`
-      );
+      const results = await searchLocations(query);
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch locations");
-      }
-
-      const data = await response.json();
-
-      if (data.results) {
-        setLocations(data.results);
+      if (results.length > 0) {
+        setLocations(results);
       } else {
         setLocations([]);
         setError("No locations found");
@@ -66,7 +47,7 @@ export default function Home() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    searchLocations(value);
+    handleSearch(value);
   };
 
   return (
