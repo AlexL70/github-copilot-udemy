@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -136,6 +137,14 @@ export default function Home() {
           <p className="text-zinc-600 dark:text-zinc-400">
             Search for locations using Open Meteo API
           </p>
+          <div className="mt-4">
+            <Link
+              href="/signup"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline text-sm"
+            >
+              Subscribe to newsletter
+            </Link>
+          </div>
         </div>
 
         <div className="mb-6">
