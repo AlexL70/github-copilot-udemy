@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,7 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { searchLocations, type Location } from "@/lib/api";
+import {
+  searchLocations,
+  getMarineWeather,
+  type Location,
+  type MarineWeather,
+} from "@/lib/api";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,6 +23,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isWaiting, setIsWaiting] = useState(false);
+  const [marineWeather, setMarineWeather] = useState<
+    Record<number, MarineWeather>
+  >({});
+  const [loadingWeather, setLoadingWeather] = useState<Record<number, boolean>>(
+    {}
+  );
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = async (query: string) => {
@@ -43,6 +55,23 @@ export default function Home() {
       setLocations([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCheckMarineWeather = async (location: Location) => {
+    setLoadingWeather((prev) => ({ ...prev, [location.id]: true }));
+
+    try {
+      const weather = await getMarineWeather(
+        location.latitude,
+        location.longitude
+      );
+      setMarineWeather((prev) => ({ ...prev, [location.id]: weather }));
+    } catch (error) {
+      console.error("Failed to fetch marine weather:", error);
+      // You could set an error state here if needed
+    } finally {
+      setLoadingWeather((prev) => ({ ...prev, [location.id]: false }));
     }
   };
 
@@ -127,7 +156,7 @@ export default function Home() {
           {locations.map((location) => (
             <Card
               key={location.id}
-              className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <CardHeader className="pb-3">
                 <CardTitle className="text-xl">
@@ -138,11 +167,65 @@ export default function Home() {
                   {location.country} • {location.timezone}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-sm text-zinc-600 dark:text-zinc-400">
-                <div className="flex gap-4">
-                  <span>Lat: {location.latitude.toFixed(4)}</span>
-                  <span>Lon: {location.longitude.toFixed(4)}</span>
+              <CardContent className="space-y-4">
+                <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="flex gap-4">
+                    <span>Lat: {location.latitude.toFixed(4)}</span>
+                    <span>Lon: {location.longitude.toFixed(4)}</span>
+                  </div>
                 </div>
+
+                <Button
+                  onClick={() => handleCheckMarineWeather(location)}
+                  disabled={loadingWeather[location.id]}
+                  className="w-full"
+                >
+                  {loadingWeather[location.id]
+                    ? "Loading..."
+                    : "Check marine weather"}
+                </Button>
+
+                {marineWeather[location.id] && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg space-y-2">
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                      Marine Weather
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-blue-700 dark:text-blue-300 font-medium">
+                          Wave Height:
+                        </span>
+                        <p className="text-blue-900 dark:text-blue-100">
+                          {marineWeather[location.id].current.wave_height}{" "}
+                          {marineWeather[location.id].current_units.wave_height}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-blue-700 dark:text-blue-300 font-medium">
+                          Sea Surface Temp:
+                        </span>
+                        <p className="text-blue-900 dark:text-blue-100">
+                          {
+                            marineWeather[location.id].current
+                              .sea_surface_temperature
+                          }
+                          {
+                            marineWeather[location.id].current_units
+                              .sea_surface_temperature
+                          }
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-blue-700 dark:text-blue-300 font-medium">
+                          Time:
+                        </span>
+                        <p className="text-blue-900 dark:text-blue-100">
+                          {marineWeather[location.id].current.time}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
