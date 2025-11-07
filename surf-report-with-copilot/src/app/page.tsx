@@ -1,55 +1,136 @@
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+interface Location {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  country: string;
+  admin1?: string;
+  timezone: string;
+}
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const searchLocations = async (query: string) => {
+    if (!query.trim()) {
+      setLocations([]);
+      setError("");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+          query
+        )}&count=10&language=en&format=json`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch locations");
+      }
+
+      const data = await response.json();
+
+      if (data.results) {
+        setLocations(data.results);
+      } else {
+        setLocations([]);
+        setError("No locations found");
+      }
+    } catch {
+      setError("Error searching for locations. Please try again.");
+      setLocations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    searchLocations(value);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-zinc-900 p-8">
+      <main className="w-full max-w-2xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
+            Location Search
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Search for locations using Open Meteo API
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <Button>Default Button</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="destructive">Destructive</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="link">Link</Button>
+
+        <div className="mb-6">
+          <Input
+            type="text"
+            placeholder="Search for a location..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full text-lg"
+          />
         </div>
 
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row mt-4">
-          <Button size="sm">Small</Button>
-          <Button size="default">Default Size</Button>
-          <Button size="lg">Large</Button>
-          <Button size="icon">🚀</Button>
+        {loading && (
+          <p className="text-center text-zinc-600 dark:text-zinc-400">
+            Searching...
+          </p>
+        )}
+
+        {error && (
+          <p className="text-center text-red-600 dark:text-red-400">{error}</p>
+        )}
+
+        <div className="space-y-3">
+          {locations.map((location) => (
+            <Card
+              key={location.id}
+              className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl">
+                  {location.name}
+                  {location.admin1 && `, ${location.admin1}`}
+                </CardTitle>
+                <CardDescription>
+                  {location.country} • {location.timezone}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm text-zinc-600 dark:text-zinc-400">
+                <div className="flex gap-4">
+                  <span>Lat: {location.latitude.toFixed(4)}</span>
+                  <span>Lon: {location.longitude.toFixed(4)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+
+        {searchQuery && locations.length === 0 && !loading && !error && (
+          <p className="text-center text-zinc-600 dark:text-zinc-400 mt-8">
+            Start typing to search for locations
+          </p>
+        )}
       </main>
     </div>
   );
