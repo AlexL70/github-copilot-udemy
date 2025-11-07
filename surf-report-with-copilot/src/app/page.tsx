@@ -24,11 +24,12 @@ export default function Home() {
   const [error, setError] = useState("");
   const [isWaiting, setIsWaiting] = useState(false);
   const [marineWeather, setMarineWeather] = useState<
-    Record<number, MarineWeather>
+    Record<number, MarineWeather | null>
   >({});
   const [loadingWeather, setLoadingWeather] = useState<Record<number, boolean>>(
     {}
   );
+  const [noMarineData, setNoMarineData] = useState<Record<number, boolean>>({});
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = async (query: string) => {
@@ -66,7 +67,18 @@ export default function Home() {
         location.latitude,
         location.longitude
       );
-      setMarineWeather((prev) => ({ ...prev, [location.id]: weather }));
+
+      // Check if both wave_height and sea_surface_temperature are null
+      if (
+        weather.current.wave_height === null &&
+        weather.current.sea_surface_temperature === null
+      ) {
+        setNoMarineData((prev) => ({ ...prev, [location.id]: true }));
+        setMarineWeather((prev) => ({ ...prev, [location.id]: null }));
+      } else {
+        setMarineWeather((prev) => ({ ...prev, [location.id]: weather }));
+        setNoMarineData((prev) => ({ ...prev, [location.id]: false }));
+      }
     } catch (error) {
       console.error("Failed to fetch marine weather:", error);
       // You could set an error state here if needed
@@ -177,7 +189,9 @@ export default function Home() {
 
                 <Button
                   onClick={() => handleCheckMarineWeather(location)}
-                  disabled={loadingWeather[location.id]}
+                  disabled={
+                    loadingWeather[location.id] || noMarineData[location.id]
+                  }
                   className="w-full"
                 >
                   {loadingWeather[location.id]
@@ -185,7 +199,16 @@ export default function Home() {
                     : "Check marine weather"}
                 </Button>
 
-                {marineWeather[location.id] && (
+                {noMarineData[location.id] && (
+                  <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950 rounded-lg">
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      ℹ️ No marine weather information available. This location
+                      is probably not on the shore.
+                    </p>
+                  </div>
+                )}
+
+                {marineWeather[location.id] && !noMarineData[location.id] && (
                   <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg space-y-2">
                     <h4 className="font-semibold text-blue-900 dark:text-blue-100">
                       Marine Weather
@@ -196,8 +219,11 @@ export default function Home() {
                           Wave Height:
                         </span>
                         <p className="text-blue-900 dark:text-blue-100">
-                          {marineWeather[location.id].current.wave_height}{" "}
-                          {marineWeather[location.id].current_units.wave_height}
+                          {marineWeather[location.id]!.current.wave_height}{" "}
+                          {
+                            marineWeather[location.id]!.current_units
+                              .wave_height
+                          }
                         </p>
                       </div>
                       <div>
@@ -206,11 +232,11 @@ export default function Home() {
                         </span>
                         <p className="text-blue-900 dark:text-blue-100">
                           {
-                            marineWeather[location.id].current
+                            marineWeather[location.id]!.current
                               .sea_surface_temperature
                           }
                           {
-                            marineWeather[location.id].current_units
+                            marineWeather[location.id]!.current_units
                               .sea_surface_temperature
                           }
                         </p>
@@ -220,7 +246,7 @@ export default function Home() {
                           Time:
                         </span>
                         <p className="text-blue-900 dark:text-blue-100">
-                          {marineWeather[location.id].current.time}
+                          {marineWeather[location.id]!.current.time}
                         </p>
                       </div>
                     </div>

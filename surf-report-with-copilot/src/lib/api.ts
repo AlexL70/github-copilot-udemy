@@ -30,8 +30,8 @@ export interface MarineWeather {
   current: {
     time: string;
     interval: number;
-    wave_height: number;
-    sea_surface_temperature: number;
+    wave_height: number | null;
+    sea_surface_temperature: number | null;
   };
 }
 
