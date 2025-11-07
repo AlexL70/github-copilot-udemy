@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -16,6 +16,8 @@ export default function Home() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isWaiting, setIsWaiting] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -47,8 +49,41 @@ export default function Home() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    handleSearch(value);
+
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // If input is empty, clear results immediately
+    if (!value.trim()) {
+      setLocations([]);
+      setError("");
+      setLoading(false);
+      setIsWaiting(false);
+      return;
+    }
+
+    // Set waiting state
+    setIsWaiting(true);
+    setLoading(false);
+    setError("");
+
+    // Set new timer to call API after 2 seconds
+    debounceTimerRef.current = setTimeout(() => {
+      setIsWaiting(false);
+      handleSearch(value);
+    }, 2000);
   };
+
+  // Cleanup timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-zinc-900 p-8">
@@ -71,6 +106,12 @@ export default function Home() {
             className="w-full text-lg"
           />
         </div>
+
+        {isWaiting && (
+          <p className="text-center text-blue-600 dark:text-blue-400 mb-4 animate-pulse">
+            Searching in 2 seconds...
+          </p>
+        )}
 
         {loading && (
           <p className="text-center text-zinc-600 dark:text-zinc-400">
